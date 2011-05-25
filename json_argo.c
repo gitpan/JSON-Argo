@@ -19,11 +19,12 @@ typedef struct json_argo
 }
 json_argo_t;
 
-#define MESSAGE(format, args...) {              \
-        if (data->verbose) {                    \
-            printf (format, ##args);            \
-            printf ("\n");                      \
-        }                                       \
+#define MESSAGE(format, args...) {                      \
+        if (data->verbose) {                            \
+            printf ("%s:%d: ", __FILE__, __LINE__);     \
+            printf (format, ##args);                    \
+            printf ("\n");                              \
+        }                                               \
     }
 
 static json_parse_status
@@ -153,12 +154,47 @@ json_argo_hash_add (void * vdata, void * vhash, void * vleft, void * vright)
 /* Given JSON in a string, turn it in to Perl. */
 
 SV *
-json_argo_to_perl (SV * json_sv)
+json_argo_parse (json_parse_object * jpo, SV * json_sv)
 {
     const char * json_bytes;
-    int json_length;
-    json_argo_t json_argo_data = {0};
     json_parse_status status;
+    int json_length;
+    if (SvUTF8 (json_sv)) {
+        json_argo_t * json_argo_data =  jpo->ud;
+        json_argo_data->utf8 = 1;
+        //Set this to 1 to get debuggering messages.
+        json_argo_data->verbose = 0;
+    }
+
+    if (! SvOK (json_sv)) {
+        return & PL_sv_undef;
+    }
+    json_bytes = SvPV (json_sv, json_length);
+    /* This is yy_scan_string but with the name changed from yy to
+       json_parse_lex_. */
+    json_parse_lex__scan_string (json_bytes, jpo->scanner);
+    status = json_parse (jpo);
+    if (status == json_parse_ok) {
+        if (jpo->parse_result) {
+            return jpo->parse_result;
+        }
+        else {
+            return & PL_sv_undef;
+        }        
+    }
+    else if (status == json_parse_no_input_fail) {
+        return & PL_sv_undef;
+    }
+    else {
+        croak ("Parsing failed: %s", json_parse_status_messages[status]);
+        return & PL_sv_undef;
+    }
+}
+
+SV *
+json_argo_to_perl (SV * json_sv)
+{
+    json_argo_t json_argo_data = {0};
     json_parse_object jpo = {
         json_argo_string_create,
         json_argo_string_create,
@@ -169,29 +205,94 @@ json_argo_to_perl (SV * json_sv)
         json_argo_hash_add,
         & json_argo_data,
     };
+    SV * r;
 
-    if (SvUTF8 (json_sv)) {
-        json_argo_data.utf8 = 1;
-    }
-    //Set this to true to get debuggering messages.
-    //json_argo_data.verbose = 1;
+    json_parse_init (& jpo);
 
-    if (! SvOK (json_sv)) {
-        return & PL_sv_undef;
-    }
+    r = json_argo_parse (& jpo, json_sv);
+    json_parse_free (& jpo);
+    return r;
+}
+
+/*             _ _     _       _   _             
+   __   ____ _| (_) __| | __ _| |_(_) ___  _ __  
+   \ \ / / _` | | |/ _` |/ _` | __| |/ _ \| '_ \ 
+    \ V / (_| | | | (_| | (_| | |_| | (_) | | | |
+     \_/ \__,_|_|_|\__,_|\__,_|\__|_|\___/|_| |_| */
+                                              
+
+/* The following callbacks just return. */
+
+static json_parse_status
+json_argo_string_create_valid (void * vdata, const char * string,
+                                  json_parse_u_obj * out)
+{
+    return json_parse_ok;
+}
+
+static json_parse_status
+json_argo_array_create_valid (void * vdata, json_parse_u_obj * out)
+{
+    return json_parse_ok;
+}
+
+static json_parse_status
+json_argo_hash_create_valid (void * vdata, json_parse_u_obj * out)
+{
+    return json_parse_ok;
+}
+
+static json_parse_status
+json_argo_ntf_create_valid (void * vdata, json_type t, void ** out)
+{
+    return json_parse_ok;
+}
+
+static json_parse_status
+json_argo_array_push_valid (void * vdata, void * varray, void * velement)
+{
+    return json_parse_ok;
+}
+
+static json_parse_status
+json_argo_hash_add_valid (void * vdata, void * vhash, void * vleft, void * vright)
+{
+    return json_parse_ok;
+}
+
+int
+json_argo_valid_parse (json_parse_object * jpo, SV * json_sv)
+{
+    const char * json_bytes;
+    json_parse_status status;
+    int json_length;
     json_bytes = SvPV (json_sv, json_length);
-    json_parse__scan_string (json_bytes);
-    status = json_parse (& jpo);
-    if (status == json_parse_ok) {
-        if (jpo.parse_result) {
-            return jpo.parse_result;
-        }
-        else {
-            return & PL_sv_undef;
-        }        
-    }
-    else {
-        croak ("Parsing failed: %s", json_parse_status_messages[status]);
-        return & PL_sv_undef;
-    }
+    /* This is yy_scan_string but with the name changed from yy to
+       json_parse_lex_. */
+    json_parse_lex__scan_string (json_bytes, jpo->scanner);
+    status = json_parse (jpo);
+    return ! status;
+}
+
+int
+json_argo_valid_json (SV * json_sv)
+{
+    json_argo_t json_argo_data = {0};
+    json_parse_object jpo = {
+        json_argo_string_create_valid,
+        json_argo_string_create_valid,
+        json_argo_array_create_valid,
+        json_argo_hash_create_valid,
+        json_argo_ntf_create_valid,
+        json_argo_array_push_valid,
+        json_argo_hash_add_valid,
+        & json_argo_data,
+    };
+    int r;
+
+    json_parse_init (& jpo);
+
+    r = json_argo_valid_parse (& jpo, json_sv);
+    json_parse_free (& jpo);
+    return r;
 }

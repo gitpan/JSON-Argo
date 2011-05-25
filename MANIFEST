@@ -14,4 +14,6 @@ ppport.h
 t/JSON-Argo.t
 src/json_parse_grammar.y
 src/json_parse_lex.l
+unicode.c
+unicode.h
 META.yml                                 Module meta-data (added by MakeMaker)

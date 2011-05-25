@@ -9,52 +9,56 @@
 
 /* From `json_parse.c': */
 
-#line 3 "json_parse.c"
+#line 4 "json_parse.c"
 typedef enum {
     json_parse_ok,
     json_parse_fail,
     json_parse_callback_fail,
     json_parse_memory_fail,
-    json_parse_parse_fail,
+    json_parse_grammar_fail,
     json_parse_lex_fail,
-    json_parse_unimplemented_fail
+    json_parse_unimplemented_fail,
+    json_parse_unicode_fail,
+    json_parse_no_input_fail,
+    json_parse_bad_start_fail,
+    json_parse_unknown_escape_fail,
 }
-#line 14 "json_parse.c"
+#line 19 "json_parse.c"
 json_parse_status;
 typedef enum {
     json_null,
     json_true,
     json_false
 }
-#line 21 "json_parse.c"
+#line 26 "json_parse.c"
 json_type;
 
-#line 23 "json_parse.c"
+#line 28 "json_parse.c"
 typedef void * json_parse_u_obj;
 
-#line 25 "json_parse.c"
+#line 30 "json_parse.c"
 typedef void * json_parse_u_data;
 
-#line 27 "json_parse.c"
+#line 32 "json_parse.c"
 typedef json_parse_u_obj * json_parse_new_u_obj;
 
-#line 30 "json_parse.c"
+#line 35 "json_parse.c"
 typedef json_parse_status (*json_parse_create_sn)
 (json_parse_u_data, const char *, json_parse_new_u_obj);
 
-#line 33 "json_parse.c"
+#line 38 "json_parse.c"
 typedef json_parse_status (*json_parse_create_ao)
 (json_parse_u_data, json_parse_new_u_obj);
 
-#line 36 "json_parse.c"
+#line 41 "json_parse.c"
 typedef json_parse_status (*json_parse_create_ntf)
 (json_parse_u_data, json_type, json_parse_new_u_obj);
 
-#line 39 "json_parse.c"
+#line 44 "json_parse.c"
 typedef json_parse_status (*json_parse_add2array)
 (json_parse_u_data, json_parse_u_obj a, json_parse_u_obj e);
 
-#line 42 "json_parse.c"
+#line 47 "json_parse.c"
 typedef json_parse_status (*json_parse_add2object)
 (json_parse_u_data, json_parse_u_obj o, json_parse_u_obj l, json_parse_u_obj r);
 typedef struct {
@@ -71,21 +75,35 @@ typedef struct {
     json_parse_u_obj parse_result;
     
     json_parse_status js;
+    
+    void * scanner;
+    
+    struct {
+        size_t size;
+        size_t length;
+        char * chrs;
+    } buffer;
 } 
 
-#line 59 "json_parse.c"
+#line 73 "json_parse.c"
 json_parse_object;
 
-#line 71 "json_parse.c"
+#line 88 "json_parse.c"
 extern const char * json_parse_status_messages[];
 
-#line 75 "json_parse.c"
+#line 94 "json_parse.c"
 extern json_parse_object * json_parse_global_jpo;
 
-#line 82 "json_parse.c"
+#line 99 "json_parse.c"
+void json_parse_init (json_parse_object * jpo );
+
+#line 107 "json_parse.c"
 int json_parse (json_parse_object * jpo );
 
-#line 96 "json_parse.c"
-int json_parse_error (const char * message );
+#line 119 "json_parse.c"
+void json_parse_free (json_parse_object * jpo );
+
+#line 131 "json_parse.c"
+int json_parse_error (json_parse_object * jpo_x , const char * message );
 
 #endif /* CFH_JSON_PARSE_H */

@@ -1,6 +1,6 @@
-#ifndef json_parse_HEADER_H
-#define json_parse_HEADER_H 1
-#define json_parse_IN_HEADER 1
+#ifndef json_parse_lex_HEADER_H
+#define json_parse_lex_HEADER_H 1
+#define json_parse_lex_IN_HEADER 1
 
 #line 6 "json_parse_lexer.h"
 
@@ -110,6 +110,23 @@ typedef unsigned int flex_uint32_t;
 #define yyconst
 #endif
 
+/* An opaque pointer. */
+#ifndef YY_TYPEDEF_YY_SCANNER_T
+#define YY_TYPEDEF_YY_SCANNER_T
+typedef void* yyscan_t;
+#endif
+
+/* For convenience, these vars (plus the bison vars far below)
+   are macros in the reentrant scanner. */
+#define yyin yyg->yyin_r
+#define yyout yyg->yyout_r
+#define yyextra yyg->yyextra_r
+#define yyleng yyg->yyleng_r
+#define yytext yyg->yytext_r
+#define yylineno (YY_CURRENT_BUFFER_LVALUE->yy_bs_lineno)
+#define yycolumn (YY_CURRENT_BUFFER_LVALUE->yy_bs_column)
+#define yy_flex_debug yyg->yy_flex_debug_r
+
 /* Size of default input buffer. */
 #ifndef YY_BUF_SIZE
 #define YY_BUF_SIZE 16384
@@ -119,10 +136,6 @@ typedef unsigned int flex_uint32_t;
 #define YY_TYPEDEF_YY_BUFFER_STATE
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #endif
-
-extern int json_parse_leng;
-
-extern FILE *json_parse_in, *json_parse_out;
 
 #ifndef YY_TYPEDEF_YY_SIZE_T
 #define YY_TYPEDEF_YY_SIZE_T
@@ -180,31 +193,28 @@ struct yy_buffer_state
 	};
 #endif /* !YY_STRUCT_YY_BUFFER_STATE */
 
-void json_parse_restart (FILE *input_file  );
-void json_parse__switch_to_buffer (YY_BUFFER_STATE new_buffer  );
-YY_BUFFER_STATE json_parse__create_buffer (FILE *file,int size  );
-void json_parse__delete_buffer (YY_BUFFER_STATE b  );
-void json_parse__flush_buffer (YY_BUFFER_STATE b  );
-void json_parse_push_buffer_state (YY_BUFFER_STATE new_buffer  );
-void json_parse_pop_buffer_state (void );
+void json_parse_lex_restart (FILE *input_file ,yyscan_t yyscanner );
+void json_parse_lex__switch_to_buffer (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
+YY_BUFFER_STATE json_parse_lex__create_buffer (FILE *file,int size ,yyscan_t yyscanner );
+void json_parse_lex__delete_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
+void json_parse_lex__flush_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
+void json_parse_lex_push_buffer_state (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
+void json_parse_lex_pop_buffer_state (yyscan_t yyscanner );
 
-YY_BUFFER_STATE json_parse__scan_buffer (char *base,yy_size_t size  );
-YY_BUFFER_STATE json_parse__scan_string (yyconst char *yy_str  );
-YY_BUFFER_STATE json_parse__scan_bytes (yyconst char *bytes,int len  );
+YY_BUFFER_STATE json_parse_lex__scan_buffer (char *base,yy_size_t size ,yyscan_t yyscanner );
+YY_BUFFER_STATE json_parse_lex__scan_string (yyconst char *yy_str ,yyscan_t yyscanner );
+YY_BUFFER_STATE json_parse_lex__scan_bytes (yyconst char *bytes,int len ,yyscan_t yyscanner );
 
-void *json_parse_alloc (yy_size_t  );
-void *json_parse_realloc (void *,yy_size_t  );
-void json_parse_free (void *  );
+void *json_parse_lex_alloc (yy_size_t ,yyscan_t yyscanner );
+void *json_parse_lex_realloc (void *,yy_size_t ,yyscan_t yyscanner );
+void json_parse_lex_free (void * ,yyscan_t yyscanner );
 
 /* Begin user sect3 */
 
-#define json_parse_wrap(n) 1
+#define json_parse_lex_wrap(n) 1
 #define YY_SKIP_YYWRAP
 
-extern int json_parse_lineno;
-
-extern char *json_parse_text;
-#define yytext_ptr json_parse_text
+#define yytext_ptr yytext_r
 
 #ifdef YY_HEADER_EXPORT_START_CONDITIONS
 #define INITIAL 0
@@ -224,34 +234,42 @@ extern char *json_parse_text;
 #define YY_EXTRA_TYPE void *
 #endif
 
+int json_parse_lex_lex_init (yyscan_t* scanner);
+
+int json_parse_lex_lex_init_extra (YY_EXTRA_TYPE user_defined,yyscan_t* scanner);
+
 /* Accessor methods to globals.
    These are made visible to non-reentrant scanners for convenience. */
 
-int json_parse_lex_destroy (void );
+int json_parse_lex_lex_destroy (yyscan_t yyscanner );
 
-int json_parse_get_debug (void );
+int json_parse_lex_get_debug (yyscan_t yyscanner );
 
-void json_parse_set_debug (int debug_flag  );
+void json_parse_lex_set_debug (int debug_flag ,yyscan_t yyscanner );
 
-YY_EXTRA_TYPE json_parse_get_extra (void );
+YY_EXTRA_TYPE json_parse_lex_get_extra (yyscan_t yyscanner );
 
-void json_parse_set_extra (YY_EXTRA_TYPE user_defined  );
+void json_parse_lex_set_extra (YY_EXTRA_TYPE user_defined ,yyscan_t yyscanner );
 
-FILE *json_parse_get_in (void );
+FILE *json_parse_lex_get_in (yyscan_t yyscanner );
 
-void json_parse_set_in  (FILE * in_str  );
+void json_parse_lex_set_in  (FILE * in_str ,yyscan_t yyscanner );
 
-FILE *json_parse_get_out (void );
+FILE *json_parse_lex_get_out (yyscan_t yyscanner );
 
-void json_parse_set_out  (FILE * out_str  );
+void json_parse_lex_set_out  (FILE * out_str ,yyscan_t yyscanner );
 
-int json_parse_get_leng (void );
+int json_parse_lex_get_leng (yyscan_t yyscanner );
 
-char *json_parse_get_text (void );
+char *json_parse_lex_get_text (yyscan_t yyscanner );
 
-int json_parse_get_lineno (void );
+int json_parse_lex_get_lineno (yyscan_t yyscanner );
 
-void json_parse_set_lineno (int line_number  );
+void json_parse_lex_set_lineno (int line_number ,yyscan_t yyscanner );
+
+YYSTYPE * json_parse_lex_get_lval (yyscan_t yyscanner );
+
+void json_parse_lex_set_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -259,18 +277,18 @@ void json_parse_set_lineno (int line_number  );
 
 #ifndef YY_SKIP_YYWRAP
 #ifdef __cplusplus
-extern "C" int json_parse_wrap (void );
+extern "C" int json_parse_lex_wrap (yyscan_t yyscanner );
 #else
-extern int json_parse_wrap (void );
+extern int json_parse_lex_wrap (yyscan_t yyscanner );
 #endif
 #endif
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char *,yyconst char *,int );
+static void yy_flex_strncpy (char *,yyconst char *,int ,yyscan_t yyscanner);
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * );
+static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
 #endif
 
 #ifndef YY_NO_INPUT
@@ -293,9 +311,11 @@ static int yy_flex_strlen (yyconst char * );
 #ifndef YY_DECL
 #define YY_DECL_IS_OURS 1
 
-extern int json_parse_lex (void);
+extern int json_parse_lex_lex \
+               (YYSTYPE * yylval_param ,yyscan_t yyscanner);
 
-#define YY_DECL int json_parse_lex (void)
+#define YY_DECL int json_parse_lex_lex \
+               (YYSTYPE * yylval_param , yyscan_t yyscanner)
 #endif /* !YY_DECL */
 
 /* yy_get_previous_state - get the state just before the EOB char was reached */
@@ -312,9 +332,9 @@ extern int json_parse_lex (void);
 #undef YY_DECL
 #endif
 
-#line 145 "json_parse_lex.l"
+#line 225 "json_parse_lex.l"
 
 
-#line 319 "json_parse_lexer.h"
-#undef json_parse_IN_HEADER
-#endif /* json_parse_HEADER_H */
+#line 339 "json_parse_lexer.h"
+#undef json_parse_lex_IN_HEADER
+#endif /* json_parse_lex_HEADER_H */
