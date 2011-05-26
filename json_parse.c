@@ -1,3 +1,5 @@
+/* Copyright (c) 2010-2011 Ben Bullock (bkb@cpan.org). */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,6 +17,7 @@ typedef enum {
     json_parse_no_input_fail,
     json_parse_bad_start_fail,
     json_parse_unknown_escape_fail,
+    json_parse_n_statuses,
 } 
 json_parse_status;
 
@@ -24,12 +27,16 @@ typedef enum {
     json_false
 } 
 json_type;
+
 /* User object */
 typedef void * json_parse_u_obj;
+
 /* User data */
 typedef void * json_parse_u_data;
+
 /* Place for user to return a newly-created object */
 typedef json_parse_u_obj * json_parse_new_u_obj;
+
 /* Function types */
 typedef json_parse_status 
 (*json_parse_create_sn)
@@ -74,7 +81,11 @@ json_parse_object;
 
 #endif
 
-const char * json_parse_status_messages[] = {
+#include "json_parse.h"
+#include "json_parse_grammar.tab.h"
+#include "json_parse_lexer.h"
+
+const char * json_parse_status_messages[json_parse_n_statuses] = {
     "OK",
     "unknown failure",
     "a callback routine failed",
@@ -85,15 +96,17 @@ const char * json_parse_status_messages[] = {
     "Unicode \\uXXXX decoding failed",
     "input was empty",
     "the text did not start with { or [ as it should have",
+    "met an unknown escape sequence (backslash \\ + character)",
 };
 
-#include "json_parse.h"
-#include "json_parse_grammar.tab.h"
-#include "json_parse_lexer.h"
-
-json_parse_object * json_parse_global_jpo;
+/* This declares the parsing function in
+   "json_parse_grammar.tab.c". */
 
 int json_parse_parse (json_parse_object * jpo);
+
+/* With the reentrant parser, it is necessary to initialize the
+   buffers which are in jpo->scanner. This also sets the value of
+   yyextra to jpo. */
 
 void json_parse_init (json_parse_object * jpo)
 {
@@ -106,12 +119,7 @@ void json_parse_init (json_parse_object * jpo)
 int json_parse (json_parse_object * jpo)
 {
     int parser_status;
-    json_parse_global_jpo = jpo;
-    json_parse_global_jpo->js = json_parse_ok;
-    //printf ("%d\n", jpo->js);
     parser_status = json_parse_parse (jpo);
-    //printf ("%d\n", jpo->js);
-    json_parse_global_jpo = 0;
     return parser_status;
 }
 

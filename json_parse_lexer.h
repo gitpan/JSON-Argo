@@ -332,7 +332,7 @@ extern int json_parse_lex_lex \
 #undef YY_DECL
 #endif
 
-#line 225 "json_parse_lex.l"
+#line 260 "json_parse_lex.l"
 
 
 #line 339 "json_parse_lexer.h"

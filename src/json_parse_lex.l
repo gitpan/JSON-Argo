@@ -1,3 +1,5 @@
+/* Copyright (c) 2010-2011 Ben Bullock (bkb@cpan.org). */
+
 %{
 
 #include <string.h>
@@ -18,6 +20,15 @@
             return js;                          \
         }                                       \
     }
+
+/*  ____  _        _               _           _ _     _               
+   / ___|| |_ _ __(_)_ __   __ _  | |__  _   _(_) | __| | ___ _ __ ___ 
+   \___ \| __| '__| | '_ \ / _` | | '_ \| | | | | |/ _` |/ _ \ '__/ __|
+    ___) | |_| |  | | | | | (_| | | |_) | |_| | | | (_| |  __/ |  \__ \
+   |____/ \__|_|  |_|_| |_|\__, | |_.__/ \__,_|_|_|\__,_|\___|_|  |___/
+                           |___/                                        */
+
+/* These functions build up the string to return as "yylval->chrs". */
 
 /* Resize the buffer (double its size). */
 
@@ -55,10 +66,6 @@ buffer_add (json_parse_object * jpo, char c)
     jpo->buffer.length = new_length;
     return json_parse_ok;
 }
-
-/* Add one character from the lex input to the buffer. */
-
-#define ADD(n) buffer_add (yyextra, yytext[n])
 
 static json_parse_status
 buffer_finish (YYSTYPE * json_parse_lval, json_parse_object * jpo)
@@ -103,19 +110,6 @@ buffer_copy_text (YYSTYPE * json_parse_lval, json_parse_object * jpo, const char
     return buffer_finish (json_parse_lval, jpo);
 }
 
-#define FAIL(failure)                           \
-    json_parse_global_jpo->js = failure;        \
-    return -1;
-
-static json_parse_status js;
-
-/* Check the status and return if it is not OK. */
-
-#define CHK                                     \
-    if (js != json_parse_ok) {                  \
-        FAIL(js);                               \
-    }
-
 /* Add a unicode character to the buffer from the UCS-2 of its
    bytes. */
 
@@ -132,7 +126,7 @@ buffer_add_unicode (json_parse_object * jpo, const char * ucs2_hex)
     utf8_bytes = ucs2_to_utf8 (ucs2, utf8);
     //printf ("%s -> UCS-2: %X %d bytes.\n", ucs2_hex, ucs2, utf8_bytes);
     if (utf8_bytes <= 0) {
-        FAIL (json_parse_unicode_fail);
+        return json_parse_unicode_fail;
     }
     for (i = 0; i < utf8_bytes; i++) {
         buffer_add (jpo, utf8[i]);
@@ -150,11 +144,24 @@ buffer_free (json_parse_object * jpo)
     }
 }
 
+/*
+  __  __                             __              _                    
+ |  \/  | __ _  ___ _ __ ___  ___   / _| ___  _ __  | | _____  _____ _ __ 
+ | |\/| |/ _` |/ __| '__/ _ \/ __| | |_ / _ \| '__| | |/ _ \ \/ / _ \ '__|
+ | |  | | (_| | (__| | | (_) \__ \ |  _| (_) | |    | |  __/>  <  __/ |   
+ |_|  |_|\__,_|\___|_|  \___/|___/ |_|  \___/|_|    |_|\___/_/\_\___|_|   
+                                                                         
+*/
+
+/* These macros are for the lexer only. */
+
+/* Debugging messages. */
+
 #if 0
 #define MESSAGE(x, args...) {                           \
         printf ("%s:%d: status: %d: line %d: ",         \
                 __FILE__, __LINE__,                     \
-                json_parse_global_jpo->js, yylineno);   \
+                yyextra->js, yylineno);                 \
         printf (x, ## args);                            \
         printf ("\n");                                  \
 }
@@ -162,20 +169,42 @@ buffer_free (json_parse_object * jpo)
 #define MESSAGE(x, args...)
 #endif
 
+/* Add one character from the lex input to the buffer. */
+
+#define ADD(n) buffer_add (yyextra, yytext[n])
+
+/* Stop the lexer and set the error status to "failure". */
+
+#define FAIL(failure)             \
+    yyextra->js = failure;        \
+    return -1;
+
+/* Check the status and return if it is not OK. */
+
+#define CHK                                     \
+    if (js != json_parse_ok) {                  \
+        FAIL(js);                               \
+    }
+
+#define JS json_parse_status js =
 
 %}
 
+/* Add extra arguments to the yylex function to talk to Bison. */
+
 %option bison-bridge
+
+ /* Make a reentrant (thread-safe) parser. */
 
 %option reentrant
 
 %option noyywrap
 
-%option yylineno
+/* Do the line numbers. */
 
 %option yylineno
 
- /* See Flex manual, section 16.3 */
+ /* Prefix to use instead of "yy". See Flex manual, section 16.3 */
 
 %option prefix="json_parse_lex_"
 
@@ -183,19 +212,25 @@ buffer_free (json_parse_object * jpo)
 
 NUMBER  -?([1-9][0-9]*|0)(\.[0-9]+)?([eE][-+]?[0-9]+)?
 
- /* See RFC 4267 p.5 */
+ /* Escapes, like \t for tab. See RFC 4267 p.5 */
 
 ESCAPE	\\["\\/bfnrt]
 
-/* See RFC 4267 p.2 */
+/* White space. See RFC 4267 p.2 */
 
 WSPACE  [\x09\x0A\x0D\x20]
 
+/* JSON Unicode UCS-2 point, like \u9aaa. */
+
 UNICODE \\u[0-9a-fA-F]{4}
+
+/* Regular expressions for UTF-8 bytes. */
 
 UTF8_2	[\xC2-\xDF][\x80-\xBF]
 UTF8_3  [\xE1-\xEF][\x80-\xBF]{2}
 UTF8_4	[\xF0-\xF4][\x80-\xBF]{3}
+
+/* There are two states, INITIAL and STRING. */
 
 %s STRING 
 
@@ -203,7 +238,7 @@ UTF8_4	[\xF0-\xF4][\x80-\xBF]{3}
 
 <INITIAL>[\[\]{},:]	{ return yytext[0]; }
 <INITIAL>\"		{ BEGIN(STRING); }
-<INITIAL>{NUMBER}	{ js = buffer_copy_text (yylval, yyextra, yytext); CHK; return number; }
+<INITIAL>{NUMBER}	{ JS buffer_copy_text (yylval, yyextra, yytext); CHK; return number; }
 <INITIAL>{WSPACE}	{ }
 <INITIAL>true		{ return true; }
 <INITIAL>false		{ return false; }
@@ -212,11 +247,11 @@ UTF8_4	[\xF0-\xF4][\x80-\xBF]{3}
 <<EOF>>                 { MESSAGE("eof");return eof; }
 \0                      { MESSAGE("null = eof");return eof; }
 
-<STRING>\"	  	{ js = buffer_finish (yylval, yyextra); CHK; 
+<STRING>\"	  	{ JS buffer_finish (yylval, yyextra); CHK; 
                           BEGIN(INITIAL); return chars; }
 <STRING>[\x20-\x7E]	{ ADD(0); }
-<STRING>{ESCAPE}	{ js = buffer_add_escape (yyextra, yytext[1]); CHK }
-<STRING>{UNICODE}	{ buffer_add_unicode (yyextra, yytext + 2); }
+<STRING>{ESCAPE}	{ JS buffer_add_escape (yyextra, yytext[1]); CHK }
+<STRING>{UNICODE}	{ buffer_add_unicode (yyextra, yytext + strlen ("\\u")); }
 <STRING>{UTF8_2}	{ ADD(0); ADD(1); }
 <STRING>{UTF8_3}	{ ADD(0); ADD(1); ADD(2); }
 <STRING>{UTF8_4}	{ ADD(0); ADD(1); ADD(2); ADD(3); }
@@ -224,6 +259,8 @@ UTF8_4	[\xF0-\xF4][\x80-\xBF]{3}
 
 %%
 
-/* Local variables:
+/*
+   Local variables:
    mode: text
-   End: */
+   End: 
+*/

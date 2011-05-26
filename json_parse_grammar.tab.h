@@ -54,7 +54,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1685 of yacc.c  */
-#line 53 "json_parse_grammar.y"
+#line 76 "json_parse_grammar.y"
 
     json_parse_u_obj	  uo;
     json_parse_u_obj 	  uo_pair[2];

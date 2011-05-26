@@ -4,7 +4,7 @@ require Exporter;
 @EXPORT_OK = qw/json_to_perl valid_json/;
 use warnings;
 use strict;
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 use XSLoader;
 XSLoader::load 'JSON::Argo', $VERSION;
 
@@ -16,7 +16,7 @@ __END__
 
 =head1 NAME
 
-JSON::Argo - Convert JSON text into Perl
+JSON::Argo - Convert JSON into a Perl variable
 
 =head1 SYNOPSIS
 
@@ -129,6 +129,10 @@ The name of this Perl package (Argo) clashes with a Java JSON
 parser. The two things are totally unrelated. The author of this
 module only found out about the Java program after already uploading
 this module to CPAN.
+
+=item Line numbers
+
+The line numbers are broken since switching to a reentrant parser.
 
 =back
 

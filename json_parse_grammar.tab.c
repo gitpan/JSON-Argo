@@ -75,27 +75,36 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 3 "json_parse_grammar.y"
+#line 5 "json_parse_grammar.y"
 
 
 #include <stdlib.h>
+
+/* The option below gives this the prefix "json_parse_" but the lexer
+   has the prefix "json_parse_lex_". The following define sends the
+   compiler to the correct yylex function. */
+
 #define json_parse_lex json_parse_lex_lex
 
 #include "json_parse.h"
 #include "json_parse_grammar.tab.h"
 #include "json_parse_lexer.h"
-#define CALL(f) json_parse_status js; js = (*json_parse_global_jpo->f)
-#define CALL2(f) js = (*json_parse_global_jpo->f)
 
-    /* Check the return value from a call to a */
+#define CALL(f) json_parse_status js; js = (*jpo_x->f)
+#define CALL2(f) js = (*jpo_x->f)
+
+/* Check the return value from a call to a */
 
 #define CHK if (js != json_parse_ok) {          \
-        json_parse_global_jpo->js = js;         \
+        jpo_x->js = js;                         \
         return 1;                               \
     }
 
-#define UD json_parse_global_jpo->ud
-extern const char * chrs;
+/* UD is the user data part of "json_parse_object". */
+
+#define UD jpo_x->ud
+
+/* Debugging stuff. */
 
 #if 0
 #define MESSAGE(x, args...) {                                   \
@@ -111,18 +120,21 @@ extern const char * chrs;
 #define FAIL(status) {                                                  \
         MESSAGE("%s", #status);                                         \
         /* Check that there is not already an error message */          \
-        if (json_parse_global_jpo->js == json_parse_ok) {               \
-            json_parse_global_jpo->js = json_parse_ ## status ## _fail; \
+        if (jpo_x->js == json_parse_ok) {                               \
+            jpo_x->js = json_parse_ ## status ## _fail;                 \
         }                                                               \
-        return json_parse_global_jpo->js;                               \
+        return jpo_x->js;                                               \
     }
+
+/* The reentrant lexer needs to use allocated memory to hold its
+information. The "scanner" member of "jpo_x" is that information. */
 
 #define scanner jpo_x->scanner
 
 
 
 /* Line 189 of yacc.c  */
-#line 126 "json_parse_grammar.tab.c"
+#line 138 "json_parse_grammar.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -165,7 +177,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 53 "json_parse_grammar.y"
+#line 76 "json_parse_grammar.y"
 
     json_parse_u_obj	  uo;
     json_parse_u_obj 	  uo_pair[2];
@@ -174,7 +186,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 178 "json_parse_grammar.tab.c"
+#line 190 "json_parse_grammar.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -186,7 +198,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 190 "json_parse_grammar.tab.c"
+#line 202 "json_parse_grammar.tab.c"
 
 #ifdef short
 # undef short
@@ -475,9 +487,9 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    78,    78,    81,    85,    86,    87,    89,    91,    92,
-      94,    97,    99,   101,   103,   104,   106,   108,   109,   110,
-     111,   112,   113,   114
+       0,   101,   101,   104,   108,   109,   110,   112,   114,   115,
+     117,   120,   122,   124,   126,   127,   129,   131,   132,   133,
+     134,   135,   136,   137
 };
 #endif
 
@@ -1407,60 +1419,60 @@ yyreduce:
         case 2:
 
 /* Line 1464 of yacc.c  */
-#line 78 "json_parse_grammar.y"
+#line 101 "json_parse_grammar.y"
     { MESSAGE ("json=object");
-                                  json_parse_global_jpo->parse_result = (yyval.uo);
-                                  return json_parse_global_jpo->js; ;}
+                                  jpo_x->parse_result = (yyval.uo);
+                                  return jpo_x->js; ;}
     break;
 
   case 3:
 
 /* Line 1464 of yacc.c  */
-#line 81 "json_parse_grammar.y"
+#line 104 "json_parse_grammar.y"
     { MESSAGE ("json=array");
-                                  json_parse_global_jpo->parse_result = (yyval.uo);
-                                  return json_parse_global_jpo->js; ;}
+                                  jpo_x->parse_result = (yyval.uo);
+                                  return jpo_x->js; ;}
     break;
 
   case 4:
 
 /* Line 1464 of yacc.c  */
-#line 85 "json_parse_grammar.y"
+#line 108 "json_parse_grammar.y"
     { FAIL (no_input); ;}
     break;
 
   case 5:
 
 /* Line 1464 of yacc.c  */
-#line 86 "json_parse_grammar.y"
+#line 109 "json_parse_grammar.y"
     { FAIL (bad_start); ;}
     break;
 
   case 6:
 
 /* Line 1464 of yacc.c  */
-#line 87 "json_parse_grammar.y"
+#line 110 "json_parse_grammar.y"
     { FAIL (grammar); ;}
     break;
 
   case 7:
 
 /* Line 1464 of yacc.c  */
-#line 89 "json_parse_grammar.y"
+#line 112 "json_parse_grammar.y"
     { (yyval.uo) = (yyvsp[(2) - (3)].uo); ;}
     break;
 
   case 8:
 
 /* Line 1464 of yacc.c  */
-#line 91 "json_parse_grammar.y"
+#line 114 "json_parse_grammar.y"
     { CALL(object_create)(UD, & (yyval.uo)); CHK ;}
     break;
 
   case 9:
 
 /* Line 1464 of yacc.c  */
-#line 92 "json_parse_grammar.y"
+#line 115 "json_parse_grammar.y"
     { CALL(object_create)(UD, & (yyval.uo)); CHK
 	  			  CALL2(object_add)(UD, (yyval.uo), (yyvsp[(1) - (1)].uo_pair)[0], (yyvsp[(1) - (1)].uo_pair)[1]); CHK ;}
     break;
@@ -1468,7 +1480,7 @@ yyreduce:
   case 10:
 
 /* Line 1464 of yacc.c  */
-#line 94 "json_parse_grammar.y"
+#line 117 "json_parse_grammar.y"
     { CALL(object_add)(UD, (yyvsp[(1) - (3)].uo), (yyvsp[(3) - (3)].uo_pair)[0], (yyvsp[(3) - (3)].uo_pair)[1]); CHK 
                                   (yyval.uo) = (yyvsp[(1) - (3)].uo); ;}
     break;
@@ -1476,35 +1488,35 @@ yyreduce:
   case 11:
 
 /* Line 1464 of yacc.c  */
-#line 97 "json_parse_grammar.y"
+#line 120 "json_parse_grammar.y"
     { (yyval.uo_pair)[0] = (yyvsp[(1) - (3)].uo); (yyval.uo_pair)[1] = (yyvsp[(3) - (3)].uo); ;}
     break;
 
   case 12:
 
 /* Line 1464 of yacc.c  */
-#line 99 "json_parse_grammar.y"
+#line 122 "json_parse_grammar.y"
     { CALL(string_create)(UD, (yyvsp[(1) - (1)].chrs), & (yyval.uo)); CHK ;}
     break;
 
   case 13:
 
 /* Line 1464 of yacc.c  */
-#line 101 "json_parse_grammar.y"
+#line 124 "json_parse_grammar.y"
     { (yyval.uo) = (yyvsp[(2) - (3)].uo); ;}
     break;
 
   case 14:
 
 /* Line 1464 of yacc.c  */
-#line 103 "json_parse_grammar.y"
+#line 126 "json_parse_grammar.y"
     { CALL(array_create)(UD, & (yyval.uo)); CHK ;}
     break;
 
   case 15:
 
 /* Line 1464 of yacc.c  */
-#line 104 "json_parse_grammar.y"
+#line 127 "json_parse_grammar.y"
     { CALL(array_create)(UD, & (yyval.uo)); CHK 
 	  			  CALL2(array_add)(UD, (yyval.uo), (yyvsp[(1) - (1)].uo)); CHK ;}
     break;
@@ -1512,49 +1524,49 @@ yyreduce:
   case 16:
 
 /* Line 1464 of yacc.c  */
-#line 106 "json_parse_grammar.y"
+#line 129 "json_parse_grammar.y"
     { CALL(array_add)(UD, (yyvsp[(1) - (3)].uo), (yyvsp[(3) - (3)].uo)); CHK; (yyval.uo) = (yyvsp[(1) - (3)].uo); ;}
     break;
 
   case 17:
 
 /* Line 1464 of yacc.c  */
-#line 108 "json_parse_grammar.y"
+#line 131 "json_parse_grammar.y"
     { CALL(string_create)(UD, (yyvsp[(1) - (1)].chrs), & (yyval.uo)); CHK ;}
     break;
 
   case 18:
 
 /* Line 1464 of yacc.c  */
-#line 109 "json_parse_grammar.y"
+#line 132 "json_parse_grammar.y"
     { CALL(number_create)(UD, (yyvsp[(1) - (1)].chrs), & (yyval.uo)); CHK ;}
     break;
 
   case 21:
 
 /* Line 1464 of yacc.c  */
-#line 112 "json_parse_grammar.y"
+#line 135 "json_parse_grammar.y"
     { CALL(ntf_create)(UD, json_true, & (yyval.uo)); CHK ;}
     break;
 
   case 22:
 
 /* Line 1464 of yacc.c  */
-#line 113 "json_parse_grammar.y"
+#line 136 "json_parse_grammar.y"
     { CALL(ntf_create)(UD, json_false, & (yyval.uo)); CHK ;}
     break;
 
   case 23:
 
 /* Line 1464 of yacc.c  */
-#line 114 "json_parse_grammar.y"
+#line 137 "json_parse_grammar.y"
     { CALL(ntf_create)(UD, json_null, & (yyval.uo)); CHK ;}
     break;
 
 
 
 /* Line 1464 of yacc.c  */
-#line 1558 "json_parse_grammar.tab.c"
+#line 1570 "json_parse_grammar.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1766,7 +1778,7 @@ yyreturn:
 
 
 /* Line 1684 of yacc.c  */
-#line 116 "json_parse_grammar.y"
+#line 139 "json_parse_grammar.y"
 
 
 /*

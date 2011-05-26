@@ -503,7 +503,8 @@ static yyconst flex_int32_t yy_rule_can_match_eol[19] =
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 #line 1 "json_parse_lex.l"
-#line 2 "json_parse_lex.l"
+/* Copyright (c) 2010-2011 Ben Bullock (bkb@cpan.org). */
+#line 4 "json_parse_lex.l"
 
 #include <string.h>
 #include <stdlib.h>
@@ -523,6 +524,15 @@ static yyconst flex_int32_t yy_rule_can_match_eol[19] =
             return js;                          \
         }                                       \
     }
+
+/*  ____  _        _               _           _ _     _               
+   / ___|| |_ _ __(_)_ __   __ _  | |__  _   _(_) | __| | ___ _ __ ___ 
+   \___ \| __| '__| | '_ \ / _` | | '_ \| | | | | |/ _` |/ _ \ '__/ __|
+    ___) | |_| |  | | | | | (_| | | |_) | |_| | | | (_| |  __/ |  \__ \
+   |____/ \__|_|  |_|_| |_|\__, | |_.__/ \__,_|_|_|\__,_|\___|_|  |___/
+                           |___/                                        */
+
+/* These functions build up the string to return as "yylval->chrs". */
 
 /* Resize the buffer (double its size). */
 
@@ -560,10 +570,6 @@ buffer_add (json_parse_object * jpo, char c)
     jpo->buffer.length = new_length;
     return json_parse_ok;
 }
-
-/* Add one character from the lex input to the buffer. */
-
-#define ADD(n) buffer_add (yyextra, yytext[n])
 
 static json_parse_status
 buffer_finish (YYSTYPE * json_parse_lval, json_parse_object * jpo)
@@ -608,19 +614,6 @@ buffer_copy_text (YYSTYPE * json_parse_lval, json_parse_object * jpo, const char
     return buffer_finish (json_parse_lval, jpo);
 }
 
-#define FAIL(failure)                           \
-    json_parse_global_jpo->js = failure;        \
-    return -1;
-
-static json_parse_status js;
-
-/* Check the status and return if it is not OK. */
-
-#define CHK                                     \
-    if (js != json_parse_ok) {                  \
-        FAIL(js);                               \
-    }
-
 /* Add a unicode character to the buffer from the UCS-2 of its
    bytes. */
 
@@ -637,7 +630,7 @@ buffer_add_unicode (json_parse_object * jpo, const char * ucs2_hex)
     utf8_bytes = ucs2_to_utf8 (ucs2, utf8);
     //printf ("%s -> UCS-2: %X %d bytes.\n", ucs2_hex, ucs2, utf8_bytes);
     if (utf8_bytes <= 0) {
-        FAIL (json_parse_unicode_fail);
+        return json_parse_unicode_fail;
     }
     for (i = 0; i < utf8_bytes; i++) {
         buffer_add (jpo, utf8[i]);
@@ -655,11 +648,24 @@ buffer_free (json_parse_object * jpo)
     }
 }
 
+/*
+  __  __                             __              _                    
+ |  \/  | __ _  ___ _ __ ___  ___   / _| ___  _ __  | | _____  _____ _ __ 
+ | |\/| |/ _` |/ __| '__/ _ \/ __| | |_ / _ \| '__| | |/ _ \ \/ / _ \ '__|
+ | |  | | (_| | (__| | | (_) \__ \ |  _| (_) | |    | |  __/>  <  __/ |   
+ |_|  |_|\__,_|\___|_|  \___/|___/ |_|  \___/|_|    |_|\___/_/\_\___|_|   
+                                                                         
+*/
+
+/* These macros are for the lexer only. */
+
+/* Debugging messages. */
+
 #if 0
 #define MESSAGE(x, args...) {                           \
         printf ("%s:%d: status: %d: line %d: ",         \
                 __FILE__, __LINE__,                     \
-                json_parse_global_jpo->js, yylineno);   \
+                yyextra->js, yylineno);                 \
         printf (x, ## args);                            \
         printf ("\n");                                  \
 }
@@ -667,13 +673,37 @@ buffer_free (json_parse_object * jpo)
 #define MESSAGE(x, args...)
 #endif
 
+/* Add one character from the lex input to the buffer. */
 
-/* See Flex manual, section 16.3 */
+#define ADD(n) buffer_add (yyextra, yytext[n])
+
+/* Stop the lexer and set the error status to "failure". */
+
+#define FAIL(failure)             \
+    yyextra->js = failure;        \
+    return -1;
+
+/* Check the status and return if it is not OK. */
+
+#define CHK                                     \
+    if (js != json_parse_ok) {                  \
+        FAIL(js);                               \
+    }
+
+#define JS json_parse_status js =
+
+/* Add extra arguments to the json_parse_lex_lex function to talk to Bison. */
+/* Make a reentrant (thread-safe) parser. */
+/* Do the line numbers. */
+/* Prefix to use instead of "yy". See Flex manual, section 16.3 */
 /* See RFC 4267 p.4 */
-/* See RFC 4267 p.5 */
-/* See RFC 4267 p.2 */
+/* Escapes, like \t for tab. See RFC 4267 p.5 */
+/* White space. See RFC 4267 p.2 */
+/* JSON Unicode UCS-2 point, like \u9aaa. */
+/* Regular expressions for UTF-8 bytes. */
+/* There are two states, INITIAL and STRING. */
  
-#line 677 "json_parse_lexer.c"
+#line 707 "json_parse_lexer.c"
 
 #define INITIAL 0
 #define STRING 1
@@ -907,10 +937,10 @@ YY_DECL
 	register int yy_act;
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
-#line 202 "json_parse_lex.l"
+#line 237 "json_parse_lex.l"
 
 
-#line 914 "json_parse_lexer.c"
+#line 944 "json_parse_lexer.c"
 
     yylval = yylval_param;
 
@@ -1009,102 +1039,102 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 204 "json_parse_lex.l"
+#line 239 "json_parse_lex.l"
 { return yytext[0]; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 205 "json_parse_lex.l"
+#line 240 "json_parse_lex.l"
 { BEGIN(STRING); }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 206 "json_parse_lex.l"
-{ js = buffer_copy_text (yylval, yyextra, yytext); CHK; return number; }
+#line 241 "json_parse_lex.l"
+{ JS buffer_copy_text (yylval, yyextra, yytext); CHK; return number; }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 207 "json_parse_lex.l"
+#line 242 "json_parse_lex.l"
 { }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 208 "json_parse_lex.l"
+#line 243 "json_parse_lex.l"
 { return true; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 209 "json_parse_lex.l"
+#line 244 "json_parse_lex.l"
 { return false; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 210 "json_parse_lex.l"
+#line 245 "json_parse_lex.l"
 { return null; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 211 "json_parse_lex.l"
+#line 246 "json_parse_lex.l"
 { MESSAGE("unknown character");FAIL(json_parse_lex_fail) }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING):
-#line 212 "json_parse_lex.l"
+#line 247 "json_parse_lex.l"
 { MESSAGE("eof");return eof; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 213 "json_parse_lex.l"
+#line 248 "json_parse_lex.l"
 { MESSAGE("null = eof");return eof; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 215 "json_parse_lex.l"
-{ js = buffer_finish (yylval, yyextra); CHK; 
+#line 250 "json_parse_lex.l"
+{ JS buffer_finish (yylval, yyextra); CHK; 
                           BEGIN(INITIAL); return chars; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 217 "json_parse_lex.l"
+#line 252 "json_parse_lex.l"
 { ADD(0); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 218 "json_parse_lex.l"
-{ js = buffer_add_escape (yyextra, yytext[1]); CHK }
+#line 253 "json_parse_lex.l"
+{ JS buffer_add_escape (yyextra, yytext[1]); CHK }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 219 "json_parse_lex.l"
-{ buffer_add_unicode (yyextra, yytext + 2); }
+#line 254 "json_parse_lex.l"
+{ buffer_add_unicode (yyextra, yytext + strlen ("\\u")); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 220 "json_parse_lex.l"
+#line 255 "json_parse_lex.l"
 { ADD(0); ADD(1); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 221 "json_parse_lex.l"
+#line 256 "json_parse_lex.l"
 { ADD(0); ADD(1); ADD(2); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 222 "json_parse_lex.l"
+#line 257 "json_parse_lex.l"
 { ADD(0); ADD(1); ADD(2); ADD(3); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 223 "json_parse_lex.l"
+#line 258 "json_parse_lex.l"
 { MESSAGE("unknown character in string");FAIL(json_parse_lex_fail); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 225 "json_parse_lex.l"
+#line 260 "json_parse_lex.l"
 ECHO;
 	YY_BREAK
-#line 1108 "json_parse_lexer.c"
+#line 1138 "json_parse_lexer.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2280,11 +2310,13 @@ void json_parse_lex_free (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 225 "json_parse_lex.l"
+#line 260 "json_parse_lex.l"
 
 
 
-/* Local variables:
+/*
+   Local variables:
    mode: text
-   End: */
+   End: 
+*/
 
