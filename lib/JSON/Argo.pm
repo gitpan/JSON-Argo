@@ -4,7 +4,7 @@ require Exporter;
 @EXPORT_OK = qw/json_to_perl valid_json/;
 use warnings;
 use strict;
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 use XSLoader;
 XSLoader::load 'JSON::Argo', $VERSION;
 
@@ -132,7 +132,16 @@ this module to CPAN.
 
 =item Line numbers
 
-The line numbers are broken since switching to a reentrant parser.
+The line numbers in error messages are broken since switching to a
+reentrant parser.
+
+=item Compiling on Perl 5.8
+
+According to the CPAN testers' site
+(L<http://static.cpantesters.org/distro/J/JSON-Argo.html>), the module
+seems to have some problems compiling on Perl versions 5.8 or earlier,
+due to a clash of the term C<YYSTYPE> with a header file F<perly.h> in
+the Perl distribution.
 
 =back
 

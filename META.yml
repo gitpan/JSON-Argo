@@ -1,8 +1,9 @@
 --- #YAML:1.0
 name:               JSON-Argo
-version:            0.03
+version:            0.04
 abstract:           ~
-author:  []
+author:
+    - Ben Bullock <bkb@cpan.org>
 license:            perl
 distribution_type:  module
 configure_requires:

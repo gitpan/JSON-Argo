@@ -9,16 +9,16 @@
 
 /* From `json_argo.c': */
 
-#line 158 "json_argo.c"
+#line 160 "json_argo.c"
 SV * json_argo_parse (json_parse_object * jpo , SV * json_sv );
 
-#line 196 "json_argo.c"
+#line 198 "json_argo.c"
 SV * json_argo_to_perl (SV * json_sv );
 
-#line 265 "json_argo.c"
+#line 267 "json_argo.c"
 int json_argo_valid_parse (json_parse_object * jpo , SV * json_sv );
 
-#line 279 "json_argo.c"
+#line 281 "json_argo.c"
 int json_argo_valid_json (SV * json_sv );
 
 #endif /* CFH_JSON_ARGO_H */

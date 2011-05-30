@@ -1,11 +1,11 @@
+/* Copyright (C) 2011 Ben Bullock <bkb@cpan.org>. */
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 
 #include "ppport.h"
 
-#include "json_parse_lexer.h"
-#include "json_parse_grammar.tab.h"
 #include "json_parse.h"
 #include "json_argo.h"
 
@@ -18,6 +18,8 @@ typedef struct json_argo
     int utf8 : 1;
 }
 json_argo_t;
+
+/* Debugging messages. */
 
 #define MESSAGE(format, args...) {                      \
         if (data->verbose) {                            \
